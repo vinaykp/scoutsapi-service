@@ -1,0 +1,62 @@
+
+service: scoutsapi-service # NOTE: update this with your service name
+
+custom:
+  secrets: ${file(secrets.json)}
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  memorySize: 128 # set the maximum memory of the Lambdas in Megabytes
+  timeout: 10 # the timeout is 10 seconds (default is 6 seconds)
+  stage: dev # setting the env stage to dev, this will be visible in the routes
+  region: us-east-2
+  environment: 
+    NODE_ENV: ${self:custom.secrets.NODE_ENV}
+    MONGODB_ATLAS_CLUSTER_URI: ${self:custom.secrets.MONGODB_ATLAS_CLUSTER_URI}
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+     - http:
+         path: hello/get
+         method: get
+  create:
+    handler: handler.create # point to exported create function in handler.js
+    events:
+      - http:
+          path: members # path will be domain.name.com/dev/members
+          method: post
+          cors: true
+  getOne:
+    handler: handler.getOne
+    events:
+      - http:
+          path: members/{id} # path will be domain.name.com/dev/members/1
+          method: get
+          cors: true
+  getAll:
+    handler: handler.getAll # path will be domain.name.com/dev/members
+    events:
+     - http:
+         path: members
+         method: get
+         cors: true
+  update:
+    handler: handler.update # path will be domain.name.com/dev/members/1
+    events:
+     - http:
+         path: members/{id}
+         method: put
+         cors: true
+  delete:
+    handler: handler.delete
+    events:
+     - http:
+         path: members/{id} # path will be domain.name.com/dev/members/1
+         method: delete
+         cors: true
+
+plugins:
+  - serverless-offline
